@@ -1,0 +1,23 @@
+{
+  "name": "tech-blog",
+  "version": "1.0.0",
+  "description": "株式会社スマートラウンドのテックブログ。Zennに連携しています。   外部の方からの修正プルリクエストも歓迎です！",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/smartround/tech-blog.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/smartround/tech-blog/issues"
+  },
+  "homepage": "https://github.com/smartround/tech-blog#readme",
+  "dependencies": {
+    "zenn-cli": "^0.1.108"
+  }
+}
