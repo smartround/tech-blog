@@ -3,7 +3,7 @@ title: "Ktor2へアップグレードしてみた"
 emoji: "🚀"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ['techblog']
-published: false
+published: true
 ---
 
 初めまして、[株式会社スマートラウンド](https://jobs.smartround.com/)CTOの小山（[@doyaaaaaken](https://twitter.com/doyaaaaaken)）です。
