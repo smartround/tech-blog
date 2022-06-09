@@ -2,7 +2,7 @@
 title: "Ktor2へアップグレードしてみた"
 emoji: "🚀"
 type: "tech" # tech: 技術記事 / idea: アイデア
-topics: ['techblog']
+topics: ['Kotlin','Ktor','techblog']
 published: true
 ---
 
