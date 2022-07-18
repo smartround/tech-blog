@@ -6,7 +6,7 @@ topics: ['Terraform','AWS','Datadog','techblog']
 published: false
 ---
 
-こんにちは、[株式会社スマートラウンド](https://jobs.smartround.com/)のSREの[@shonansurvivors](https://twitter.com/shonansurvivors)です。
+こんにちは、[株式会社スマートラウンド](https://jobs.smartround.com/)SREの[@shonansurvivors](https://twitter.com/shonansurvivors)です。
 
 当社はインフラにAWSを使っており、ALBのログはS3バケットに保存するようにしています。
 
@@ -18,18 +18,20 @@ S3に保存したALBログはAthenaなどを使って分析することもでき
 
 このDatadog Forwarderおよび一連の関連リソースを構築する手段として、Datadog公式からは[CloudFormationテンプレート](https://docs.datadoghq.com/ja/logs/guide/forwarder/#cloudformation)が提供されています。また、このCloudFormationテンプレートを[Terraformでラップして使用する方法](https://docs.datadoghq.com/ja/logs/guide/forwarder/#terraform)についても解説されています。
 
-当社はIaCにTerraformを採用しており、Datadog ForwarderもTerraformで構築したのですが、公式とは少し違う方法で構築しました。
+当社はIaCにTerraformを採用しており、Datadog ForwarderもTerraformで構築したのですが、**公式とは少し違う方法で構築しました**。
 
 よりシンプルかつ運用しやすいコードになったと思うので本記事で解説させていただきます。
 
 # 工夫したポイント
 
-- Datadog APIキーを保管するSecrets Managerを自作せず、Datadog公式のCloudFormationで作らせた
+- Datadog APIキーの保存先のSecrets Managerを自作せず、Datadog公式のCloudFormationで作らせた
 - Datadog APIキーをTerraformのコードに含めないようにした
 
 # 環境
 
 - Datadog Forwarder 3.51.0
+- Terraform 1.1.7
+- AWS Provider 4.8.0
 
 # サンプルコード
 
@@ -41,6 +43,7 @@ resource "aws_cloudformation_stack" "datadog_forwarder" {
     DdApiKey     = "dummy" # 今回の記事のポイント その1
     DdSite       = "app.datadoghq.com"  # 使用中のDatadogサイトに合わせて、us3.datadoghq.com, us5.datadoghq.comなどに適宜変更してください
     FunctionName = "datadog-forwarder"
+    DdTags       = "env:${var.env}" # ログに環境名などのタグを付けたい場合は追加してください
   }
   template_url = "https://datadog-cloudformation-template.s3.amazonaws.com/aws/forwarder/3.51.0.yaml" # バージョンは固定しました
 
@@ -58,7 +61,7 @@ resource "aws_cloudformation_stack" "datadog_forwarder" {
 
 まず、当社の方法ではなく、Datadog公式の方法から解説します。
 
-Datadog公式では、まず最初にSecrets Managerを作成する流れとなっています。
+Datadog公式では、最初にSecrets Managerを作成する流れとなっています。
 
 ```hcl
 # Store Datadog API key in AWS Secrets Manager
@@ -126,7 +129,7 @@ resource "aws_cloudformation_stack" "datadog_forwarder" {
   name         = "datadog-forwarder"
   capabilities = ["CAPABILITY_IAM", "CAPABILITY_NAMED_IAM", "CAPABILITY_AUTO_EXPAND"]
   parameters = {
-    DdApiKey     = "dummy"
+    DdApiKey     = "dummy" # DdApiKeySecretArnではなく、DdApiKeyを指定する
     DdSite       = "app.datadoghq.com"
     FunctionName = "datadog-forwarder"
   }
@@ -148,11 +151,27 @@ resource "aws_cloudformation_stack" "datadog_forwarder" {
 
 # おまけ: S3からLambdaを起動するための設定
 
-ついでに、ログを保存しているS3からLambdaを起動するためのAWSリソースを作成するコードも載せておきます。こちらも参考にしてみてください。
+ついでに、ログ保存先のS3からLambdaを起動するためのAWSリソースのコードも載せておきます。
+
+こちらをapplyした上でSecrets Managerの値を上書きしてもらえれば、Datadogへのログ転送をすぐに開始できると思います。参考にしてみてください。
 
 ```hcl
 resource "aws_cloudformation_stack" "datadog_forwarder" {
-  # 略
+  name         = "datadog-forwarder"
+  capabilities = ["CAPABILITY_IAM", "CAPABILITY_NAMED_IAM", "CAPABILITY_AUTO_EXPAND"]
+  parameters = {
+    DdApiKey     = "dummy" 
+    DdSite       = "app.datadoghq.com"  # 使用中のDatadogサイトに合わせて、us3.datadoghq.com, us5.datadoghq.comなどに適宜変更してください
+    FunctionName = "datadog-forwarder"
+    DdTags       = "env:${var.env}" # ログに環境名などのタグを付けたい場合は追加してください
+  }
+  template_url = "https://datadog-cloudformation-template.s3.amazonaws.com/aws/forwarder/3.51.0.yaml" # バージョンは固定しました
+
+  lifecycle {
+    ignore_changes = [
+      parameters["DdApiKey"]
+    ]
+  }
 }
 
 data "aws_s3_bucket" "alb_access_logs" {
