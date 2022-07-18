@@ -58,7 +58,7 @@ resource "aws_cloudformation_stack" "datadog_forwarder" {
 
 まず、当社の方法ではなく、Datadog公式の方法から解説します。
 
-Datadog公式では、以下のようにSecrets Managerを作成するようにしています。
+Datadog公式では、まず最初にSecrets Managerを作成する流れとなっています。
 
 ```hcl
 # Store Datadog API key in AWS Secrets Manager
@@ -115,9 +115,9 @@ resource "aws_cloudformation_stack" "datadog_forwarder" {
 
 ## 当社の方法: DdApiKeySecretArnではなくDdApiKeyを指定する
 
-こうした公式の方法に対し、当社では`DdApiKeySecretArn`ではなく`DdApiKey`を指定するようにしました。
+このような公式の方法に対し、当社では`DdApiKeySecretArn`ではなく`DdApiKey`を指定するようにしました。
 
-そのようにすると、このCloudFormationは`DdApiKey`に渡された値を持つSecrets Managerを作成してくれます(興味のある方はCloudFormationテンプレートの[中身](https://github.com/DataDog/datadog-serverless-functions/blob/aws-dd-forwarder-3.51.0/aws/logs_monitoring/template.yaml)を追ってみてください)。
+そうすることで、このCloudFormationは`DdApiKey`に渡された値を持つSecrets Managerを作成してくれます(興味のある方はCloudFormationテンプレートの[中身](https://github.com/DataDog/datadog-serverless-functions/blob/aws-dd-forwarder-3.51.0/aws/logs_monitoring/template.yaml)を追ってみてください)。
 
 なお、`DdApiKey`には実際のAPIキーの値を記述するのではなく、`"dummy"`にしておきます。これはAPIキーのような機微情報をTerraformのコード上に含めたくないためです。
 
