@@ -3,7 +3,7 @@ title: "Datadogへログを送るLambdaをTerraformでシンプルに構築す�
 emoji: "🐶"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ['Terraform','AWS','Datadog','techblog']
-published: false
+published: true
 ---
 
 こんにちは、[株式会社スマートラウンド](https://jobs.smartround.com/)SREの[@shonansurvivors](https://twitter.com/shonansurvivors)です。
